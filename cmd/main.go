@@ -21,6 +21,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html")
 	w.Write([]byte(`
         <form action="/login" method="POST">
             <input type="text" placeholder="Email" name="email">
@@ -31,6 +32,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html")
     w.Write([]byte(`
         <form action="/register" method="POST">
             <input type="text" placeholder="Username" name="username">
