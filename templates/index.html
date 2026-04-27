@@ -12,10 +12,10 @@
         {{if .IsLoggedIn}}
             <p>Welcome back, {{.Username}}</p>
             <button>Create New Post</button>
-            <a href="/logout">Logout</a>
+            <a href="/logout">Logout</a> | <a href="/about">About Us</a>
         {{else}}
             <p>Welcome, guest!</p>
-            <a href="/login">Login</a> | <a href="/register">Register</a>
+            <a href="/login">Login</a> | <a href="/register">Register</a> | <a href="/about">About Us</a>
         {{end}}
 
         <h2>Recent Posts</h2>
