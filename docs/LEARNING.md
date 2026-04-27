@@ -1,37 +1,64 @@
-# 🚀 Learning Notes: Forum
+## What I have learnt
 
-## 🎯 Project Goals
-* build server & template rendering
-* add sqllit database and sql
-* add authentication and sessions (cookies)
-* add containerisation (Docker)
+** if you do not set Content-Type, the browser will fail to infer that it is a html doc
 
-## 🛠️ Key Go Concepts Applie d
+```go
+// set content type
+w.Header().Set("Content-Type", "text/html")
+```
 
-
-## 🏗️ Project Structure & Architecture
-* `cmd/`: CLI entry points.
-* `pkg/`: Library code used by external projects.
-* `internal/`: Private application code (ensures encapsulated code).
+** response methods
+- r.Method
+- r.ParseForm() / r.FormValue("email)
 
 
-* **Key Learning:** Learned to use `internal` for strict boundary enforcement.
+** write methods
+- 
 
-## 💡 "Aha!" Moments & Solutions
-* **Problem:** [E.g., Handling JSON efficiently]
-* **Solution:** [E.g., Used streaming decoder `json.NewDecoder`]
-* **Resource:** [Link to tutorial/documentation]
 
-## 🚩 Pitfalls & Common Mistakes (Go-Specific)
-* **Variable Shadowing:** Be careful with `:=` inside `if` or `for` blocks.
-* **Defer Ordering:** `defer` runs in LIFO order (last in, first out).
-* **Pointer vs Value:** Passed structs by pointer `*T` to avoid copying large data.
+** http methods
+- http.Error(w, "bad request", http.StatusBadRequest)
 
-## 🚀 Future Learning
-* [ ] Advanced concurrency patterns (`context`, `sync.WaitGroup`).
-* [ ] Testing best practices (table-driven tests).
-* [ ] Profiling and optimization (`pprof`).
 
-## 📚 References
-* [Go by Example](https://gobyexample.com/)
-* [Effective Go](https://golang.org/doc/effective_go)
+-- directives / template actions
+
+{{.Author}} - replaces it with the actual value from the data passed in
+
+
+## packages
+
+package main - Creates an executable program (not a library)
+
+html/template - For rendering HTML templates with dynamic data
+
+net/http - Provides HTTP client/server functionality
+
+time - For handling dates, times, and cookies expiration
+
+## template initialization
+
+    templates - Global variable holding all parsed HTML templates
+
+    init() - Runs automatically before main()
+
+    template.Must() - Panics if error occurs (fail fast approach)
+
+    template.ParseGlob() - Loads all .html files from the templates folder
+
+    This allows using templates.ExecuteTemplate() with any template name
+
+## homepage handler
+
+## login handler
+
+GET request: Show empty login form
+
+POST request: Process submitted credentials
+
+Form handling: Extract email/password from submitted form
+
+Validation: Check fields aren't empty
+
+Cookie creation: Store user session (temporary - should use proper auth)
+
+Redirect: Send user back to homepage after login

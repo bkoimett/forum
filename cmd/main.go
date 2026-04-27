@@ -115,6 +115,22 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
     templates.ExecuteTemplate(w, "create-post.html", data)
 }
 
+func aboutPageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.NotFound(w,r)
+		return
+	}
+
+	// bundle data to send to template
+    data := PageData{
+        Title:      "Forum Home",
+    }
+
+	templates.ExecuteTemplate(w, "about.html", data)
+
+
+}
+
 func main() {
     // Serve static files
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -124,6 +140,7 @@ func main() {
     http.HandleFunc("/login", loginHandler)
     http.HandleFunc("/logout", logoutHandler)
     http.HandleFunc("/create-post", createPostHandler)
+	http.HandleFunc("/about", aboutPageHandler)
     
     println("Server starting on http://localhost:8080")
     println("Available routes:")
@@ -131,6 +148,7 @@ func main() {
     println("  /login       - Login page")
     println("  /logout      - Logout")
     println("  /create-post - Create a new post")
+    println("  /about - About our forum page")
     
     http.ListenAndServe(":8080", nil)
 }
