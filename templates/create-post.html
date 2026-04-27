@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Create New Post</h1>
+    
+    {{if .Error}}
+        <div style="color: red;">{{.Error}}</div>
+    {{end}}
+    
+    {{if .Success}}
+        <div style="color: green;">{{.Success}}</div>
+    {{end}}
+    
+    <form method="POST" action="/create-post">
+        <div>
+            <label>Title:</label>
+            <input type="text" name="title" required style="width: 100%; padding: 8px;">
+        </div>
+        <div>
+            <label>Content:</label>
+            <textarea name="content" required rows="10" style="width: 100%; padding: 8px;"></textarea>
+        </div>
+        <button type="submit">Publish Post</button>
+    </form>
+    
+    <a href="/">Back to home</a>
+</body>
+</html>
