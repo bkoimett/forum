@@ -1,80 +1,136 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+    "html/template"
+    "net/http"
+    "time"
 )
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-	} else {
-		w.Write([]byte(`
-		<h1>Welcome to Forum</h1>
-		<a href="/login">Login</a> | <a href="/register">Register</a>	
-	`))
-	}
+type Post struct {
+    ID        int
+    Title     string
+    Content   string
+    Author    string
+    CreatedAt time.Time
+}
 
+type PageData struct {
+    Title       string
+    IsLoggedIn  bool
+    Username    string
+    Posts       []Post
+    Error       string
+    Success     string
+}
+
+var templates *template.Template
+
+func init() {
+    // Parse all templates at startup
+    templates = template.Must(template.ParseGlob("templates/*.html"))
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+    if r.URL.Path != "/" {
+        http.NotFound(w, r)
+        return
+    }
+    
+    // Sample posts (you'll replace with database later)
+    posts := []Post{
+        {ID: 1, Title: "Welcome to the forum!", Content: "Feel free to introduce yourself.", Author: "Admin", CreatedAt: time.Now()},
+        {ID: 2, Title: "Go programming tips", Content: "Remember to handle your errors!", Author: "Gopher", CreatedAt: time.Now()},
+    }
+    
+	// bundle data to send to template
+    data := PageData{
+        Title:      "Forum Home",
+        IsLoggedIn: false,
+        Posts:      posts,
+    }
+
+	// render templates with post data    
+    templates.ExecuteTemplate(w, "index.html", data)
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-
-	if r.Method == "GET" {
-
-		w.Write([]byte(`
-        <form action="/login" method="POST">
-            <input type="text" placeholder="Email" name="email">
-            <input type="password" placeholder="Password" name="password">
-            <button type="submit">Login</button>
-        </form>		
-		`))
-
-		return
-	}
-
-
-	// parse form data
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "error: bad request", http.StatusBadRequest)
-	}
-
-	// get values from the form
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-
-
-	// display what was submitted
-    response := fmt.Sprintf(`
-        <h2>Login Attempt</h2>
-        <p>Email: %s</p>
-        <p>Password: %s</p>
-        <p>(In a real app, you'd check this against your database)</p>
-        <a href="/">Go back</a>
-    `, email, password)
+    if r.Method == "GET" {
+        templates.ExecuteTemplate(w, "login.html", PageData{Title: "Login"})
+        return
+    }
     
-    w.Write([]byte(response))
-
+    // Handle POST
+    r.ParseForm()
+    email := r.FormValue("email")
+    password := r.FormValue("password")
+    
+    // Basic validation
+    if email == "" || password == "" {
+        data := PageData{Title: "Login", Error: "All fields are required"}
+        templates.ExecuteTemplate(w, "login.html", data)
+        return
+    }
+    
+    // Here you would check against database
+    // For now, accept any non-empty credentials
+    http.SetCookie(w, &http.Cookie{
+        Name:    "demo_user",
+        Value:   email,
+        Expires: time.Now().Add(24 * time.Hour),
+        Path:    "/",
+    })
+    
+    http.Redirect(w, r, "/", http.StatusSeeOther) // 303 redirect to ome
 }
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(`
-        <form action="/register" method="POST">
-            <input type="text" placeholder="Username" name="username">
-            <input type="email" placeholder="Email" name="email">
-            <input type="password" placeholder="Password" name="password">
-            <button type="submit">Register</button>
-        </form>
-    `))
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+    http.SetCookie(w, &http.Cookie{
+        Name:    "demo_user",
+        Value:   "",
+        Expires: time.Now().Add(-1 * time.Hour),
+        Path:    "/",
+    })
+    http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func createPostHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method == "GET" {
+        templates.ExecuteTemplate(w, "create-post.html", PageData{Title: "Create Post"})
+        return
+    }
+    
+    // Handle POST
+    r.ParseForm()
+    title := r.FormValue("title")
+    content := r.FormValue("content")
+    
+    if title == "" || content == "" {
+        data := PageData{Title: "Create Post", Error: "Title and content are required"}
+        templates.ExecuteTemplate(w, "create-post.html", data)
+        return
+    }
+    
+    // Here you would save to database
+    data := PageData{Title: "Create Post", Success: "Post created successfully!"}
+    templates.ExecuteTemplate(w, "create-post.html", data)
 }
 
 func main() {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/login", loginHandler)
-	http.HandleFunc("/register", registerHandler)
-
-	fmt.Println("server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+    // Serve static files
+    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+    
+    // Register routes
+    http.HandleFunc("/", homeHandler)
+    http.HandleFunc("/login", loginHandler)
+    http.HandleFunc("/logout", logoutHandler)
+    http.HandleFunc("/create-post", createPostHandler)
+    
+    println("Server starting on http://localhost:8080")
+    println("Available routes:")
+    println("  /            - Home page")
+    println("  /login       - Login page")
+    println("  /logout      - Logout")
+    println("  /create-post - Create a new post")
+    
+    http.ListenAndServe(":8080", nil)
 }
