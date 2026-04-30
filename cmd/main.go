@@ -23,6 +23,7 @@ type PageData struct {
     Success     string
 }
 
+
 var templates *template.Template
 
 func init() {
